@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  osrm-backend:
+    build:
+      context: .
+    ports:
+      - "5000:5000"
+    # volumes:
+      # - ./backend/jakarta-jabar.pbf:/data/jakarta-jabar.pbf
+      # - ./backend/profiles/car.lua:/opt/car.lua
+    container_name: osrm-java
+
+  osrm-frontend:
+    image: osrm/osrm-frontend
+    ports:
+      - "9966:9966"
+    environment:
+      OSRM_BACKEND: http://osrm-backend:5000
+    depends_on:
+      - osrm-backend
