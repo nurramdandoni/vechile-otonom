@@ -27,9 +27,21 @@
             // const map = L.map('map').setView([-6.214483, 106.84522], 13); // jakarta
             const map = L.map('map').setView([-6.91449, 107.609815], 13); // jbandung
 
+            const coverArea = L.latLngBounds(
+                                [-7.855, 105.097], // Southwest
+                                [-5.804, 109.304]  // Northeast
+                            );
+
+
             // Tambahkan tile layer (peta OpenStreetMap)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            L.rectangle(coverArea, {
+                color: "blue",
+                weight: 2,
+                fillOpacity: 0.05
             }).addTo(map);
 
             // Event click untuk ambil lat long
@@ -37,6 +49,11 @@
             const lat = e.latlng.lat;
             const lon = e.latlng.lng;
             console.log("Latitude:", lat, "Longitude:", lon);
+
+            if (!isInsideCoverage(coverArea, lat, lon)) {
+                alert("Titik di luar area cakupan Jakarta-Jawa Barat!");
+                return;
+            }
 
             
             if(click == 0){
@@ -70,7 +87,8 @@
                     iconAnchor: [16, 32]
                 })}).addTo(map).bindPopup("Titik Akhir").openPopup();
 
-                fetch("https://router.project-osrm.org/route/v1/driving/"+start_lon+","+start_lat+";"+end_lon+","+end_lat+"?overview=full&geometries=geojson")
+                fetch("http://localhost:5000/route/v1/driving/"+start_lon+","+start_lat+";"+end_lon+","+end_lat+"?overview=full&geometries=geojson")
+                // fetch("https://router.project-osrm.org/route/v1/driving/"+start_lon+","+start_lat+";"+end_lon+","+end_lat+"?overview=full&geometries=geojson")
                 // fetch("http://localhost:8080/response.json")
                 .then(response => response.json())
                 .then(data => {
@@ -153,6 +171,10 @@
             if (delta === 0) return "Lurus";
             if (delta < 180) return `Belok Kanan ${delta.toFixed(2)}°`;
             return `Belok Kiri ${(360 - delta).toFixed(2)}°`;
+        }
+
+        function isInsideCoverage(area, lat, lon) {
+            return area.contains([lat, lon]);
         }
 
     </script>
